@@ -1,0 +1,310 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\newcommand{\Hi}{\mathcal{H}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\bigket}[1]{\left |#1 \right \rangle}
+\newcommand{\bigbra}[1]{\left \langle#1 \right|}
+\newcommand{\ip}[2]{\langle #1 | #2 \rangle}
+\newcommand{\ipc}[2]{\langle #1 , #2 \rangle}
+\newcommand{\ketbra}[2]{|#1\rangle\! \langle #2|}
+%\newcommand{\braket}[3]{\langle #1|#3 \rangle}
+\newcommand{\braketbra}[3]{\langle #1|#2| #3 \rangle}
+\newcommand{\nrm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\bigO}[1]{\mathcal{O}\left( #1 \right)}
+\newcommand{\bigObig}[1]{\mathcal{O}\big( #1 \big)}
+\newcommand{\bigOt}[1]{\widetilde{\mathcal{O}}\left( #1 \right)}
+\newcommand{\phaseO}[1]{\mathrm{O}_{\!#1}}
+\newcommand{\phaseOt}[1]{\widetilde{\mathrm{O}}_{\!#1}}
+\newcommand{\erf}[1]{\mathrm{erf}\left( #1 \right)}
+\newcommand{\erfa}[1]{\mathrm{erfa}\left( #1 \right)}
+\newcommand{\erfc}[1]{\mathrm{erfc}\left( #1 \right)}
+\newcommand{\sign}[1]{\mathrm{sign}\left( #1 \right)}
+\newcommand{\diag}[1]{\mathrm{diag}\left( #1 \right)}
+\DeclareMathOperator{\arccosh}{arccosh}
+\newcommand{\vertiii}[1]{{\left\vert\kern-0.25ex\left\vert\kern-0.25ex\left\vert #1 
+		\right\vert\kern-0.25ex\right\vert\kern-0.25ex\right\vert}}
+		
+\usepackage[top=2cm, bottom = 2cm, left=2.2cm, right=2.2cm]{geometry}
+%special symbols
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\PM}{\mathcal{P}}
+
+
+%\usepackage{MnSymbol}
+\newcommand{\cupdot}{\overset{.}{\cup}}
+\newcommand{\pvp}{\vec{p}{\kern 0.45mm}'}
+\let\oldnabla\nabla
+\renewcommand{\nabla}{\oldnabla\!}
+
+\def\Id{\mathrm{Id}}
+\def\polylog{\mathrm{polylog}}
+\def\AND{\mathrm{AND}}
+\def\Pr{\mathrm{Pr}}
+\def\Tr{\mathrm{Tr}}
+\def\im{\mathrm{im}}
+
+\providecommand{\trnorm}[1]{\left\lVert#1\right\rVert_1}
+\providecommand{\infnorm}[1]{\left\lVert#1\right\rVert_{\infty}}
+\providecommand{\spnorm}[1]{\left\lVert#1\right\rVert}
+\providecommand{\maxnorm}[1]{\left\lVert#1\right\rVert_{\max}}
+\providecommand{\tr}[1]{\Tr\left[#1\right]}
+\providecommand{\sgn}[1]{\mathrm{sgn}\left(#1\right)}
+\providecommand{\rank}[1]{\mathrm{rank}\left(#1\right)}
+\providecommand{\poly}[1]{\mathrm{poly}\left(#1\right)}
+\providecommand{\img}[1]{\mathrm{img}\left(#1\right)}
+\providecommand{\spn}[1]{\mathrm{Span}\left(#1\right)}
+\providecommand{\eend}[1]{\mathrm{End}\left(#1\right)}
+
+\long\def\ignore#1{}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{conj}[theorem]{Conjecture}
+\newtheorem{inputmod}{Input Model}
+\usepackage{tikz,pgfplots}
+
+%%%% User commands for Section 2 / 3
+\newcommand\lr[1]{\left( #1 \right)}
+\newcommand\lrv[1]{\left|  #1 \right|}
+\newcommand\lrb[1]{\left\lbrace #1 \right\rbrace}
+\newcommand{\smallO}[1]{ {o}\left( #1 \right)}
+% For Section 3:
+\renewcommand{\check}{\mathtt{Check}}
+\newcommand{\setup}{\mathtt{Setup}}
+\newcommand{\update}{\mathtt{Update}}
+\newcommand{\checkingcost}{\mathsf{C}}
+\newcommand{\setupcost}{\mathsf{S}}
+\newcommand{\updatecost}{\mathsf{U}}
+\newcommand{\Reg}{\mathsf{R}}
+\newcommand{\barO}{\bar{0}}
+\newcommand{\psuccess} {p_{\textrm{success}}}
+\newtheorem{exmp}{Example}[section]
+
+
+\title{CR13-Report\\
+\textbf{Quantum Walks: Overview and application to search problems}}
+\author{Krishna Acharya}
+\date{January 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+In the field of classical algorithms, classical random walks have provided useful approximation and optimization algorithms, For instance Schoning's \cite{Schoning1999APA} \footnote{a random walk on a complete graph with vertices $\in \{0,1\}^n$ and $(x,y)\in E$ if the Hamming distance is $1$} algorithm , achieved a complexity of $(4/3)^n$ for $3$-SAT. Motivated by the results for classical walks,  researchers in the early 2000s started developing the theory for its quantum analogue. One of the earliest successes was Ambanis' quantum walk for element distinctness problem  \cite{Ambainis2003QuantumWA}. In this report I will provide an overview of quantum walks\cite{Kempe2003QuantumRW} and its application to two search problems - one historic \cite{Shenvi2003QuantumRS} and another - a recent generalization for spatial search \cite{Ambainis2019QuadraticSF}.
+
+\section{Background}
+As a starting point, I will describe the quantum analogue of the discrete time Markov chain(\textbf{DTMC}).
+For each iteration of a classical random walk on a graph, a coin is flipped. The walker then moves to an adjacent node specified by the outcome of the coin flip.\\ An equivalent process occurs in the quantum walk, with the modification that the coin is a quantum coin and can therefore exist in a superposition of states. However, if the state of the coin is measured after each flip, then the quantum random walk reverts to
+a classical random walk \footnote{even measuring the state of nodes destroys the superposition, reverting to classical}.
+
+Mathematically, this can be thought of as a repeated application of a unitary evolution operator $U$.  $U$
+acts on the Hilbert space $\Hi^C \otimes \Hi^S$
+where $\Hi^C$ is the Hilbert space associated with a quantum coin and $\Hi^S$ is the Hilbert space associated with the nodes of the graph.  The operator $U$ can be written as
+\begin{equation}\label{Equation::WalkDef}
+U = S \cdot C
+\end{equation}
+where $S$ is a permutation matrix which performs a controlled shift based on the state of the quantum coin, and $C$ is a unitary matrix which flips the quantum coin.
+An important distinction here is that if no measurement is made the quantum walk is controlled by a \textbf{unitary operator} rather than a stochastic
+one. This implies that there is \textbf{no limiting stationary distribution}. \\
+For a d-regular graph, the Shift operator $S$ is as follows
+\begin{equation}
+    S \ket{j} \otimes \ket{v} =\left\{ \begin{array}{cc} \ket{j} \otimes \ket{w} & \mbox{if}\, e_v^j=(v,w) \\
+0 & \mbox{otherwise} \end{array}\right.
+\end{equation}
+The coin space $\Hi^C$ for the above is of dimension $d$, i.e $j \in \{1 \ldots d\}$. The Coin flip $C = C_0 \otimes I$, $C_0$ is a $d\times d$ unitary acting on $\Hi^C$\\
+\textbf{Takeaway:} The Shift operator $S$ is straightforward and constructed from the underlying graph structure, but there is a lot of freedom for the choice of $C$. Different $C$'s generate different walks, and if nothing is known about where a marked vertex exists the authors suggest using the following family of unitary and permutation symmetric coins: 
+\begin{equation}
+\be
+\begin{array}{lcc} \label{Eq:grover}
+G_{a,b}&=&\left( \begin{array}{cccccc}
+a&b&b&\ldots &b&b\\
+b&a&b& \ldots &b&b\\
+b&b&a&\ldots &b&b\\
+ &&& \ldots &\\
+b&b&b&\ldots & a&b\\
+b&b&b&\ldots &b& a \end{array} \right)
+\end{array}
+\ee
+\end{equation}
+where $a$ and $b$ are real, $1-\frac{2}{d} \leq |a| \leq 1$ and $b=\pm (1-a)$. Among all these coins $a=\frac{2}{d}-1$ and $b=\frac{2}{d}$ is called the \textbf{Grover coin}. Among all coins $G_{a,b}$ this is the coin which is the farthest away from the identity operator ($G_{1,0}=I$).
+
+\section{Quantum walk search algorithm}
+% This coined walk was used by [Kempe], where the underlying graph was a n-dimensional hypercube, and the marked node $\vec{x}_{target}$
+The search space of the algorithm is all $n$-bit binary strings, $x \in \{0,1\}^n$. The function $f(\vec{x}) \in \{0,1\}$ is such that $f(x) = 1$ for exactly one input $\vec{x}_{target}$ . The goal is to find $\vec{x}_{target}$ . Using the mapping of n-bit binary string to nodes on the hypercube, this search problem is then equivalent to searching for a single marked node amongst the $N = 2^n$ nodes on the n-cube. For purposes of the proof, the authors set the marked node to be $\vec{x}_{target} = \vec{0}$, but the location of the marked node has no significance.\\
+The Shift operator $S$ maps a state $\ket{d, \vec{x}}$ onto the state $\ket{d, \vec{x} \oplus \vec{e_d}}$, where
+$\vec{e_d}$ is the $d^{th}$ basis vector on the hypercube. Explicitly
+\begin{equation}
+S = \sum_{d=0}^{n-1}{\sum_{\vec{x}}{
+\ket{d, \vec{x} \oplus \vec{e_d}}\bra{d, \vec{x}}}}    
+\end{equation}
+$C_0 = G$, the Grover coin we saw earlier can be equivalently represented as
+\begin{equation}
+C_0  = G = -I + 2\ket{s^C}\bra{s^C}
+\end{equation}
+where $\ket{s^C} = \frac{1}{\sqrt{n}} \sum_{d=1}^{n}{\ket{d}}$.~ 
+$C_0$ preserves the permutation symmetry of the hypercube as it is invariant to all permutations of $n$ dimensions.
+However the $C_{pert}$ that is applied in the algorithm is ``pertubed'', i.e $C_1$ \footnote{$C_1 = -I$ is considered in the analysis} is applied to the marked node and $C_0$ to the unmarked nodes by the coin oracle \footnote{The cost for this algorithm the number of calls to this oracle}
+\begin{equation}
+C_{pert} = C_0 \otimes I + \left(C_1 -
+C_0\right)\otimes\ket{\vec{0}}\bra{\vec{0}}.
+\end{equation}
+Finally the Unitary operator $U_{pert}$ to be applied $t$ times is:
+\begin{equation}
+\begin{array}{rcl}
+U_{pert}  & = & S \cdot C_{pert}\\
+& = & U - 2S \cdot \left(\ket{s^C}\bra{s^C} \otimes \ket{\vec{0}}\bra{\vec{0}}
+\right)
+\end{array}
+\end{equation}
+
+\begin{algorithm}[H]
+\caption{Search with coin oracle}\label{alg:q1}
+\begin{algorithmic}[1]
+\Procedure{Find Marked}{} %\Comment{The g.c.d. of a and b}
+\State $\psi_0 \gets \ket{s^C} \otimes \ket{s^S}$ i.e equal superposition over all states
+\State Compute $U_{pert}^t \ket{\psi_0}$ where $t =\frac{\pi}{2}\sqrt{2^n}$
+\State Measure in $\ket{d,\vec{x}}$ basis
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+With probability $\frac{1}{2} - O(1/n)$, the measured outcome is the marked state. As with any probabilistic algorithm this algorithm can be run a number of times, so that the marked state can be determined with arbitrarily small degree of error.\\
+
+\textbf{Takeaway}: The key idea used in this algorithm is that $U_{pert}^t$, applied on $\ket{\psi_0}$ is the same as a 2D rotation, from $\frac{1}{\sqrt{2}}(\ket{w_0} + \ket{-w_0})$\footnote{an approximation of $\ket{\psi_0}$} to $\frac{1}{\sqrt{2}}(-\ket{w_0} + \ket{-w_0})$\footnote{an approximation of $\ket{\vec{x}_{target}}$}. The angle between these two is $\pi/2$ and each application of $U_{pert}$ corresponds to a rotation angle of $1/\sqrt{2^{n-1}}$, so $t = \frac{\pi}{2} \sqrt{2^{n-1}} = O(\sqrt{N})$ coin oracle calls. Note: Here $w_0$ and $-w_0$ are ``relevant'' eigenvectors for the eigendecomposition of $U_{pert}$.
+
+\section{Linking the problems, main result}
+I now discuss a related but more general problem of spatial search. Here we are interested in finding a marked vertex in a graph. Szedegy \cite{Szegedy2004QuantumSO} showed that if a classical random walk hits a marked element in Hitting time \textbf{HT} steps, then there is a detection algorithm that runs in time $O(\sqrt{HT})$, i.e it can detect whether a marked vertex exists, but not actually find it \footnote{While the detection and finding problem in classical walks are the same this isn't the case for quantum walks}. Krovi's\cite{Krovi2015QuantumWC} algorithm finds a marked element in $O(\sqrt{HT^+})$,  $HT^{+}$ is the extended hitting time. $HT^+ = HT$ when there is exactly one marked element, but in \cite{Ambainis2019QuadraticSF} the authors show that there are special graphs with multiple marked vertices, where $HT^+ >> HT$ and even $\sqrt{HT^+} >> HT$ \footnote{Implying that even the classical walk is faster}.They also provide an algorithm that runs the find problem (for multiple marked vertices) in $\tilde{O}(\sqrt{HT})$.\\
+The running time for the Quantum walk search algorithm in the previous section is actually a special case for the spatial search problems, we can obtain it by running \cite{Krovi2015QuantumWC} or \cite{Ambainis2019QuadraticSF} quantum walk on the complete graph with only one marked element and obtain $O(\sqrt{HT})$ runtime. 
+
+\section{Quadratic speedup for finding marked vertices by quantum walks}
+The two main components for the $\tilde{O}(\sqrt{HT})$  algorithm are the Interpolated walk, and the Quantum fast forwarding algorithm. There is also a simple heuristic which does not use Quantum fast forwarding, it performs well empirically and is conjectured to run in $O(\sqrt{HT})$ 
+\subsection{Brief note on DTMC}
+$\PM$ is \emph{ergodic} if for a large enough $t\in \N$ all elements of $\PM^t$ are non-zero. For an ergodic $\PM$ we have a unique stationary distribution $\pi$ such that $\pi\PM = \pi$, the corresponding \emph{time-reversed} Markov chain is defined as $\PM^*:=\diag{\pi}^{-1}\cdot\PM^T\cdot\diag{\pi}$.  $\PM$ is \emph{reversible} if it is ergodic and $\PM^*=\PM$.
+
+For an ergodic Markov chain $\PM$, discriminant matrix $D$ is defined such that its $xy$-entry is $\sqrt{\PM_{xy}\PM^*_{yx}}$. Following from this definition we get
+\begin{equation}\label{eq:discriminant}
+D=\diag{\pi}^{\frac12}\cdot\PM\cdot\diag{\pi}^{-\frac12}.
+\end{equation}
+\subsection{Interpolated walk}
+Works as follows for a reversible Markov chain $\PM$: first checks whether the current node is marked. If the node is \emph{unmarked}, then it performs a normal step of the walk; but if it is \emph{marked}, then it performs a normal walk step with probability $1-s$, with probability $s$ it stays at the current marked node. For $\PM$ the marked set $M\subset X$. 
+$\PM'$ is the absorbing markov chain.
+The states of $X$ are arranged such that $U := X \setminus M$ come first, matrices $\PM$ and $\PM'$ have the following block structure:
+\begin{align*}
+\PM :=\left(\begin{array}{cc} \PM_{UU} & \PM_{UM} \\ \PM_{MU} & \PM_{MM} \end{array}\right), & &
+\PM' :=\left(\begin{array}{cc} \PM_{UU} & \PM_{UM} \\ 0 & I \end{array}\right).
+\end{align*}
+The \emph{interpolated walk} operator, for $s\in [0,1)$, is :
+\begin{equation}\label{eq:interpolChainDef}
+\PM(s):=(1 - s)\PM + s\PM',
+\end{equation}
+The corresponding discriminant matrix is $D(s)$. $\Pi_M$ denotes the projector onto marked vertices and $\Pi_U:=I-\Pi_M$ denotes the projector onto unmarked vertices. 
+
+\paragraph{Quantum walk search - General Structure}
+\begin{itemize}
+	\item $\check(M)$: Check if a given vertex is marked
+	by mapping $\ket{x} \ket{b}$ to $\ket{x} \ket{b}$ if $x \notin M$ and $\ket{x} \ket{b \oplus 1}$ if $x \in M$, $\ket{x}$ is the vertex register and $b \in \lrb{0,1}$;
+	\item $\setup(\PM )$: Construct the superposition $\ket{\sqrt \pi}  = \sum_{x \in X} \sqrt{\pi_x} \ket{x}$;
+	\item $\update(\PM)$: Apply $\textsc{Shift}$, $\textsc{Ref}$, and $V(\PM)^{\pm1}$.
+\end{itemize}
+\textbf{Takeaway}: Checking is performed by the oracle. Each of these operations has a corresponding associated implementation cost, denoted by $\checkingcost$, $\setupcost$, and $\updatecost$. 
+The interpolated walk + quantum fast forwarding finds a marked vertex in complexity $\bigOt{{\sf S}+\sqrt{HT}({\sf U}+{\sf C})}$.
+
+For the interpolated quantum walk, the quantum update operator $V(\PM,s)$ for all $x\in U$ acts as $I\otimes V(\PM)$ on the initial state $\ket{0}\ket{\barO}\ket{x}$ \footnote{the first $\ket{0}$ refers to the coin that flips wp $s$ and $1-s$, it is generally omitted and $\ket{0}\ket{\barO}$ is just denoted by $\ket{\barO}$}, and for $x\in M$ acts as $\ket{0}\ket{\barO}\ket{x}\mapsto \sqrt{1-s}\ket{0}V(\PM)\ket{\barO}\ket{x} + \sqrt{s}\ket{1}\ket{\barO}\ket{x}$. Explicitly, the corresponding unitary that is applied is:
+\begin{equation}
+W(s):=V^\dagger\!(\PM,s) \,\textsc{Shift}'\, V(\PM,s)\, \textsc{Ref}',
+\end{equation}
+where $\textsc{Shift}':=\ketbra{0}{0}\otimes\textsc{Shift}+\ketbra{1}{1}\otimes I$ and $\textsc{Ref}':=(2\ketbra{0}{0}\otimes\ketbra{\barO}{\barO}-I)\otimes I$ and $\textsc{Shift}$ is defined by the action $\ket{x,y}\mapsto\ket{y,x},$
+for all $x,y\in X$
+% It is easy to see that
+% \begin{equation}\label{eq:blockWalk}
+% \bra{0}\bra{\barO}\bra{x}W(s)\ket{0}\ket{\barO}\ket{y}=D_{xy}(s).
+% \end{equation}
+% Note that $W(s)$ can be implemented\footnote{We note that \cite[Appendix B.2]{krovi2010QWalkFindMarkedAnyGraph} also describes a way to implement the interpolated quantum walk operator with similar complexity but additionally require (query) access to the diagonal entries of $\PM$.} for any $s \in [0,1)$ in cost of order $\checkingcost+\updatecost$, the following way. First check whether $x\in X$ is marked, and if it is, then apply the map $\ket{0}\mapsto \sqrt{1-s}\ket{0} + \sqrt{s}\ket{1}$ to the first qubit. Controlled by the first qubit's state being $\ket{0}$ apply $V(\PM)$ to the last two registers.
+
+
+% While a classical random walk can find a marked vertex in complexity\footnote{We note that in the classical case, $\sf S$ can be replaced with the cost of \emph{classically} sampling from $\pi$, and $\sf U$ with the cost of classically sampling a neighbour of the current vertex. These classical sampling operations may be cheaper than $\setup$ and $\update$, but in practice, they are often the same.} $\bigO{{\sf S}+HT({\sf U}+{\sf C})}$, showed that using the the quantum walk $W(s)$ one can find a marked vertex in complexity $\bigObig{{\sf S}+\sqrt{HT^+}({\sf U}+{\sf C})}$.
+\subsection{Algorithm with known $s$ and $t$}
+The following algorithm describes a quantum walk algorithm with a fixed interpolation parameter  $ s\in [0,1) $ and a predetermined  number of   quantum walk steps $ t \in \N $(it is a good heuristic method).
+The basis states $ \ket x $ identified with the vertices of the graph, are in the $n$-dimensional Hilbert space $\Hi$ \footnote{Do not confuse it with Kempes notation for quantum walk search algorithm, now any graph structure is allowed}. The algorithm uses two registers $\Reg_1$, $\Reg_2$ with underlying state space $\Hi$ for each of them,  initialized to some reference state $ \ket{\barO} $.
+An ancillary register $\Reg_3$ initialized to $\ket{0} \in \C^2$ will be attached to check if the current vertex is marked. (Hope to obtain $1$ from $R_3$ on final measurement, this serves as verification that the state in $R_2$ is a marked state).
+
+\begin{algorithm}[H]
+	\textbf{Search}($ \PM $, $ M $, $ s $, $ t $) %: aim
+	
+	\begin{enumerate}
+		\item Prepare the state $\ket{\barO}\ket{\sqrt \pi}$ with $ \setup(\PM) $.
+		\item Apply $ t $ times  the operator $ W(s) $  on $ \Reg_1 \Reg_2 $.
+		\item Attach $ \Reg_3 $, apply $ \check(M) $ on $ \Reg_2 \Reg_3 $, measure $ \Reg_3 $.
+		\item If $ \Reg_3=1 $, measure $ \Reg_2 $ in the vertex basis, output the outcome. Otherwise, output \texttt{No marked vertex found}.
+	\end{enumerate}
+	
+	\caption{Known s,t}\label{alg:alg1}
+\end{algorithm}
+The above algorithm relies on the following conjecture:
+\begin{conj}
+\label{conj:1}
+	Let  $  \PM$ be a reversible, ergodic Markov chain with stationary distribution $\pi$;  suppose that   $ M $ is a set of marked states which  satisfies $p_M= \sum_{x\in M} \pi_x < 0.5 $. Then
+	there exists a  value $ s \in [0,1) $ and a positive  integer $ t = \bigObig{\sqrt{HT}} $ such that
+	Algorithm \ref{alg:alg1} succeeds with probability $ \Omega(1) $.
+	%	$ q_t(s) = \Omega(1) $, where $ q_t(s) $ is defined by \eqref{eq:S3e01}.
+\end{conj}
+If true, the runtime of the algorithm is of the order $ \bigO {\setupcost + \sqrt{HT} \cdot (\updatecost + \checkingcost)}$. 
+In the paper the authors provide some directions towards proving this , but they conclude this algorithm with empirical results.
+\subsection{Quantum fast-forwarding}\label{subsec:fast-forwarding}
+Quantum fast-forwarding technique(\textbf{QFF}) \cite{Apers2018QuantumFM}, will be used on the interpolated walk. In an adapted form it is as follows:
+
+\begin{theorem}\label{thm:fast-forwarding}
+Let $\eps\in(0,1)$, $s\in[0,1]$ and $t\in\mathbb{N}$. Let $\cal P$ be any reversible Markov chain on state space $X$, and let $\mathsf{Q}$ be the cost of implementing the (controlled) quantum walk operator $W(s)$. There is a quantum algorithm with complexity $\bigO{\sqrt{t\log(1/\eps)}\mathsf{Q}}$ that takes input $\ket{\barO}\ket{\psi}\in \mathrm{span}\{\ket{\barO}\ket{x}:x\in X\}$, and outputs a state that is $\eps$-close to a state of the form
+$$\ket{0}^{\!\otimes a}\ket{\barO}D^t\ket{\psi}+\ket{\Gamma}$$
+where $a=\bigO{\log(t\log(1/\eps))}$ and $\ket{\Gamma}$ is some garbage state that has no support on states containing $\ket{0}^{\!\otimes a}\ket{\barO}$ in the first two registers.%, and $\nrm{\ket{\Gamma}}^2 = 1 - \nrm{D^t\ket{\psi}}^2$ (which may depend on $\ket{\psi}$ and $t$). 
+\end{theorem}
+
+\textbf{Takeaway}: QFF allows us to, in some very ``quantum'' sense, apply $t$ steps of a classical walk in only $\sqrt{t}$ calls to its update operation, but the \textbf{caveat} : there is no guarantee on the amplitudes for each state by the quantum fast forwarding technique, we only have a guarantee on it being non zero. In particular, applied naively we could have a very high probability of reading the garbage state.
+The main contribution by \cite{Ambainis2019QuadraticSF} is providing a non trivial lower bound on measuring a marked state. This is proved by a series of lemmas, some combinatorial and some from prior results on ergodic chains. \\ But the main theorem to focus on is the following:
+\begin{theorem}
+	Let $\cal P$ be a reversible ergodic Markov chain, and let $\pi$ be its stationary distribution.
+	If $p_M\leq 1/9$ and $T\geq 3HT$, then choosing $s\in S=\{1-\frac{1}{r}:r\in R\}$ and $t\in [24T]$ uniformly at random we get, that 
+	$$\mathbb{E}\left[\nrm{\Pi_M D^t(s)\ket{\sqrt{\pi_U}}}^2\right]= \Omega\left(\frac{1}{\log(T)}\right).$$
+\end{theorem}\label{cor:AMRMS}
+What the above theorem \label{cor:AMRMS} means in words: the expected value\footnote{actually the square of the probability of measuring a marked state} of obtaining a measurement $\in$ the marked states when starting off in $\pi_U =\ket{\sqrt{\pi_U}}=\sum_{x\in U}\sqrt{\pi_x}\ket{x}$ is lower bounded by $1/log(T)$.
+
+This directly leads to the following algorithm:
+
+\begin{algorithm}[H]
+	\textbf{Search}($ \PM $, $ M $, $T$)\\ %: aim
+	Use $\bigO{\!\!\sqrt{\log(T)}}\!$ rounds amplitude amplification to amplify the success probability of steps~1-$3$:
+	\begin{enumerate}
+		\item Use $\setup(\PM)$ to prepare the state $$\sum_{t=1}^{T}\frac{1}{\sqrt{T}}\ket{t}\sum_{s\in S}\frac{1}{\sqrt{|S|}}\ket{s}\ket{\sqrt{\pi}}.$$
+		\item Measure $\{\Pi_M,I-\Pi_M\}$ on the last register. If the outcome is ``marked'', measure in the computational basis, and output the entry in the last register. Otherwise continue with the (subnormalized) post-measurement state %\frac{1}{\sqrt{1-p_M}}
+		$$\sum_{t=1}^{T}\frac{1}{\sqrt{T}}\ket{t}\sum_{s\in S}\frac{1}{\sqrt{|S|}}\ket{s}\ket{\sqrt{\pi_U}}.$$
+		\item Use quantum fast-forwarding, controlled on the first two registers, to map $\ket{t}\ket{s}\ket{\sqrt{\pi_U}}$ to $\ket{1}\ket{t}\ket{s}D^t(s)\ket{\pi_U}+\ket{0}\ket{\Gamma}$ for some arbitrary $\ket{\Gamma}$, with precision $\bigO{\frac{1}{\log(T)}}$. Finally, measure the last register and output its content if marked, otherwise output \texttt{No marked vertex}.
+	\end{enumerate}
+	\caption{Fast-forwarding-based search algorithm}\label{alg:alg2}
+\end{algorithm}
+
+
+% If $T\geq 72 HT(\PM,M)$, then the success probability of the above steps 1-3  is $\Omega\left(\frac{1}{\log(T)}\right)$, as shown by Corollary~\ref{cor:AMRMS}. Thus, after $\bigO{\sqrt{\log(T)}}$ steps of amplitude amplification, the success probability becomes $\Omega(1)$. 
+
+% By Theorem~\ref{thm:fast-forwarding} the complexity of step 3 is $\bigO{\sqrt{T\log\log(T)}({\sf U}+{\sf C})}$, since $W(s)$ can be implemented in cost $\bigO{{\sf U}+{\sf C}}$.
+The complexity of steps 1-3 \footnote{By Theorem 7 in \cite{Ambainis2019QuadraticSF}} is
+$\bigO{\mathsf{S}+\sqrt{T\log\log(T)}(\mathsf{U}+\mathsf{C})}$
+Amplitude amplification gives a $\sqrt{\log(T)}$ multiplicative overhead, giving the final complexity $$\bigO{\mathsf{S}\sqrt{\log(T)}+\sqrt{T}({\sf U}+{\sf C})\sqrt{\log(T)\log\log(T)}}$$
+\section{Conclusion}
+I initially started off the report with a focus on just \cite{Kempe2003QuantumRW} and \cite{Shenvi2003QuantumRS} but Prof. Omar Fawzi provided a reference to a powerful generalization of these searches in \cite{Ambainis2019QuadraticSF} which is very recent and uses latest results \cite{Apers2018QuantumFM} in Quantum algorithms. I hope the reader finds the right balance between completeness and pedagogical value in this report, and it serves as a primer to read the main papers in further detail.
+\bibliographystyle{plain}
+\bibliography{bibtex.bib}
+
+\end{document}
